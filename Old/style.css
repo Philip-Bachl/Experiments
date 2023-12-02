@@ -1,0 +1,16 @@
+:root {
+    --background-color-light: rgb(50, 50, 50);
+    --background-color: rgb(30, 30, 30);
+    --background-color-dark: rgb(10, 10, 10);
+}
+
+body {
+    height: 100vh;
+    margin: 0;
+
+    background-color: var(--background-color);
+    color: white;
+
+    font-size: 2em;
+    font-family: Arial, Helvetica, sans-serif;
+}
