@@ -44,17 +44,20 @@ class Line implements Drawable{
     }
 }
 
+class CollisionPoint {
+    constructor(public line1: Line, public line2: Line, public point: Point) {}
+}
+
 class Mesh implements Drawable {
     constructor(public lines: Line[]) {}
-    
-    collisionPoints(mesh: Mesh): Point[] {
-        const colPoints: Point[] = [];
+    collisionPoints(mesh: Mesh): CollisionPoint[] {
+        const colPoints: CollisionPoint[] = [];
 
         this.lines.forEach(l1 => {
             mesh.lines.forEach(l2 => {
                 const colPoint = l1.overlapColPoint(l2);
                 
-                if (colPoint) colPoints.push(colPoint);
+                if (colPoint) colPoints.push(new CollisionPoint(l1, l2, colPoint));
             });
         });
 
