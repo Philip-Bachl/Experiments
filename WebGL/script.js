@@ -10,6 +10,7 @@ let fragmentShader;
 let shaderProgram;
 
 let posAttrLocation;
+let timeUniLocation;
 
 setup();
 
@@ -23,7 +24,7 @@ const positions = [
 const posBuffer = ctx.createBuffer();
 ctx.bindBuffer(ctx.ARRAY_BUFFER, posBuffer);
 
-ctx.clearColor(0, 0, 0, 0);
+ctx.clearColor(0.8, 0.8, 0.8, 1);
 
 async function setup() {
     vertShaderText = await getShaderText("vert");
@@ -33,23 +34,39 @@ async function setup() {
     fragmentShader = buildShader(ctx, ctx.FRAGMENT_SHADER, fragShaderText);
     shaderProgram = buildProgram(ctx, vertexShader, fragmentShader);
 
+    //Attributes-/Uniforms-Init
+    timeUniLocation = ctx.getUniformLocation(shaderProgram, "time");
+    
     posAttrLocation =  ctx.getAttribLocation(shaderProgram, "a_position");
     ctx.vertexAttribPointer(posAttrLocation, 2, ctx.FLOAT, false, 0, 0);
-
+    ctx.enableVertexAttribArray(posAttrLocation);
+    
+    //Init Viewport and set the shaderProgram up for use
+    ctx.viewport(0, 0, canvas.width, canvas.height);
+    ctx.useProgram(shaderProgram);
+    
     requestAnimationFrame(update);
 }
 
 function update(now) {
-    ctx.viewport(0, 0, canvas.width, canvas.height);
+    positions[0] += 0.001;
+    positions[1] -= 0.001;
+
+    render(now);
+
+    requestAnimationFrame(update);
+}
+
+function render(now) {
+    //Clear with Clear color
     ctx.clear(ctx.COLOR_BUFFER_BIT);
 
+    //put data into Attributes/Uniforms
+    ctx.uniform1f(timeUniLocation, now / 1000);
     ctx.bufferData(ctx.ARRAY_BUFFER, new Float32Array(positions), ctx.STATIC_DRAW);
 
-    ctx.useProgram(shaderProgram);
-    ctx.enableVertexAttribArray(posAttrLocation);
-
+    //Actual Draw Call
     ctx.drawArrays(ctx.TRIANGLES, 0, positions.length / positionsStride);
-    requestAnimationFrame(update);
 }
 
 function buildProgram(ctx, vertShader, fragShader) {
