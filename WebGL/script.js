@@ -17,10 +17,9 @@ setup();
 
 const positionsStride = 2;
 const positions = [
-    -1.0, 1.0,
-    1.0, 1.0,
-    -1.0, -1.0,
-    1.0, -1.0
+    50, 100,
+    50, 200,
+    200, 200
 ];
 
 const posBuffer = ctx.createBuffer();
@@ -37,8 +36,7 @@ async function setup() {
     shaderProgram = buildProgram(ctx, vertexShader, fragmentShader);
 
     //Attributes-/Uniforms-Init
-    timeUniLocation = ctx.getUniformLocation(shaderProgram, "time");
-    resUniLocation = ctx.getUniformLocation(shaderProgram, "iResolution");
+    resUniLocation = ctx.getUniformLocation(shaderProgram, "u_resolution");
     
     posAttrLocation =  ctx.getAttribLocation(shaderProgram, "a_position");
     ctx.vertexAttribPointer(posAttrLocation, 2, ctx.FLOAT, false, 0, 0);
@@ -47,6 +45,10 @@ async function setup() {
     //Init Viewport and set the shaderProgram up for use
     ctx.viewport(0, 0, canvas.width, canvas.height);
     ctx.useProgram(shaderProgram);
+    
+    //put data into Attributes/Uniforms
+    ctx.uniform2f(resUniLocation, canvas.height, canvas.height);
+    ctx.bufferData(ctx.ARRAY_BUFFER, new Float32Array(positions), ctx.STATIC_DRAW);
     
     requestAnimationFrame(update);
 }
@@ -61,14 +63,10 @@ function update(now) {
 function render(now) {
     //Clear with Clear color
     ctx.clear(ctx.COLOR_BUFFER_BIT);
-
-    //put data into Attributes/Uniforms
-    ctx.uniform1f(timeUniLocation, now / 1000);
-    ctx.uniform2f(resUniLocation, canvas.height, canvas.height);
-    ctx.bufferData(ctx.ARRAY_BUFFER, new Float32Array(positions), ctx.STATIC_DRAW);
+    
 
     //Actual Draw Call
-    ctx.drawArrays(ctx.TRIANGLE_STRIP, 0, positions.length / positionsStride);
+    ctx.drawArrays(ctx.TRIANGLES, 0, positions.length / positionsStride);
 }
 
 function buildProgram(ctx, vertShader, fragShader) {
