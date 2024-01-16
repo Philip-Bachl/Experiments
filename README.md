@@ -1,1 +1,2 @@
-A repo for my experiments
+# Experiments
+This Repository is my personal dumpster for ideas
