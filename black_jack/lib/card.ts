@@ -94,7 +94,6 @@ class Card {
     public equals(card: Card) {
         return card.color == this.color && card.type == this.type;
     }
-
 }
 
 export { Card, CardColor, CardType };
