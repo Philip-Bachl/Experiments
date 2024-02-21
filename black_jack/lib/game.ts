@@ -8,7 +8,13 @@ class Game {
     }
 
     public removeCard(card: Card) {
-        this.activeCards = this.activeCards.filter(card.equals);
+        const index = this.activeCards.findIndex(c => c.equals(card));
+
+        if (index < 0) {
+            console.log("could not find card in deck");
+        }
+        
+        this.activeCards.splice(index, 1);
     }
 
     public addDeck() {
@@ -19,13 +25,11 @@ class Game {
         }
     }
 
-    public probabilityOf(card: Card | null): number {
-        if (!card) return -1;
-        
-        let winCardCount = this.activeCards.filter(c => card.equals(c)).length;
+    public probabilityOf(cardType: CardType): number {
+        let winCardCount = this.activeCards.filter(c => c.type == cardType).length;
         let totalCardCount = this.activeCards.length;
 
-        return Math.floor((winCardCount / totalCardCount) * 10000) / 10000;
+        return winCardCount / totalCardCount;
     }
 }
 

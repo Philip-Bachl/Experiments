@@ -6,9 +6,10 @@ const helpText = `
     list: lists cards
     exit: exits the program
     start: starts the game with one deck
+    add: adds a deck
+    remove: remove card specified with /^10|[2-9jqka]$/ /^[shdc]$/
     end: ends the game
-    show: shows the percentage of a card specified with
-          show /^10|[2-9jqka]$/ /^[shdc]$/
+    show: shows the percentages of all cards
 `;
 
 let game;
@@ -22,7 +23,7 @@ inputLoop:
 for await (const line of console) {
     const words = line.split(" ");
     if (words.length < 1) continue;
-    
+    let card;
     switch (words[0]) {
         case "help":
             console.log(helpText);
@@ -37,6 +38,26 @@ for await (const line of console) {
             console.log("starting game...");
             game = new Game();
             break;
+        case "add":
+            if (!game) {
+                console.log("no game started");
+                break;
+            }
+
+            game.addDeck();
+            console.log("deck added");
+            
+            break;
+        case "remove":
+            if (!game) {
+                console.log("no game started");
+                break;
+            }
+            words.shift();
+            card = Card.fromConsoleArguments(words);
+            if (!card) break;
+            game.removeCard(card);
+            break;
         case "end":
             console.log("ending game...");
             game = null;
@@ -47,11 +68,17 @@ for await (const line of console) {
                 break;
             }
 
-            words.shift();
-            console.log((game.probabilityOf(Card.fromConsoleArguments(words)) * 100) + "%");
+            for (let i = CardType.TWO; i <= CardType.ACE; i++) {
+                console.log(CardType[i] + ": " + prepareProbability(game.probabilityOf(i) * 100));
+            }
     }
 
     console.log("awaiting input...");
 }
 
 console.log("exiting...");
+process.exit();
+
+function prepareProbability(value: number) {
+    return (Math.floor(value * 10000) / 10000) + "%";
+}
