@@ -17,6 +17,38 @@ impl Board {
             black_can_caste: true,
         }
     }
+
+    pub fn print(&self) {
+        println!("+--------+");
+
+        for rank in 0..8 {
+            print!("|");
+            for file in 0..8 {
+                if let Some(piece) = self.collision_check(file, rank) {
+                    print!("{}", piece.symbol());
+                    continue;
+                }
+                if (file + rank) % 2 == 0 {
+                    print!("▓");
+                    continue;
+                }
+                print!("░");
+            }
+            println!("|");
+        }
+
+        println!("+--------+");
+    }
+
+    pub fn collision_check(&self, file: u8, rank: u8) -> Option<&Piece> {
+        for p in &self.pieces {
+            if p.file == file && p.rank == rank {
+                return Some(p);
+            }
+        }
+
+        None
+    }
 }
 
 pub const PIECES: [Piece; 32] = [
