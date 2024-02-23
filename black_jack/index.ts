@@ -16,9 +16,6 @@ let game;
 
 console.log("awaiting input...");
 
-// TODO add the remove command
-// TODO add the add deck command
-
 inputLoop:
 for await (const line of console) {
     const words = line.split(" ");
