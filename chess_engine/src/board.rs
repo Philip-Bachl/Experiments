@@ -21,7 +21,7 @@ impl Board {
     pub fn print(&self) {
         println!("+--------+");
 
-        for rank in 0..8 {
+        for rank in (0..8).rev() {
             print!("|");
             for file in 0..8 {
                 if let Some(piece) = self.collision_check(file, rank) {
@@ -29,10 +29,10 @@ impl Board {
                     continue;
                 }
                 if (file + rank) % 2 == 0 {
-                    print!("▓");
+                    print!("░");
                     continue;
                 }
-                print!("░");
+                print!("▓");
             }
             println!("|");
         }
