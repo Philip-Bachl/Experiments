@@ -1,12 +1,14 @@
-class Tests {
-    private static _tests: Test[] = [];
+import { Test, TestFunction, TestState } from "./test";
 
-    public static successTests: Test[] = [];
-    public static falureTests: Test[] = [];
+class Tests {
+    private static _tests: Test<unknown>[] = [];
+
+    public static successTests: Test<unknown>[] = [];
+    public static falureTests: Test<unknown>[] = [];
 
     public static beforeEach = () => {};
     
-    public static register(title: string, testFunction: TestFunction) {
+    public static register<T>(title: string, testFunction: TestFunction<T>) {
         this._tests.push(new Test(title, testFunction));
     }
 
@@ -39,3 +41,5 @@ class Tests {
         console.log(`    ${this.falureTests.length} failed (${this.falureTests.length * 100 / this._tests.length}%)`);
     }
 }
+
+export { Tests };
