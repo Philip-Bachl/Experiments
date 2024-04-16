@@ -38,19 +38,54 @@ nav {
     padding: 10px;
 
     align-items: center;
+
+    font-size: 2rem;
 }
 
 nav li {
+    position: relative;
+
     padding: 10px;
 
     white-space: nowrap;
     white-space-collapse: preserve;
 }
 
+nav li::before {
+    content: "";
+    
+    position: absolute;
+    bottom: 0;
+    left: 0;
+
+    height: 10%;
+    width: 100%;
+
+    transform: scaleX(0);
+    transition: transform 0.3s ease;
+    
+    background-color: black;
+}
+
+nav li:hover::before {
+    transform: scaleX(1);
+}
+
+
 .nav-button {
     display: none;
 
     width: 2em;
+    padding: 5px 10px;
+
+    background-color: cadetblue;
+    border-radius: 10px;
+    box-shadow: -5px 5px 0px 0px rgba(0, 0, 0, 0.3);
+}
+
+.nav-button:active {
+    box-shadow: none;
+    transform: translate(-5px, 5px);
 }
 
 @media (max-width: 600px) {
@@ -73,6 +108,6 @@ nav li {
     }
 
     .open {
-        transform: translateX(-50%);
+        transform: translateX(-20%);
     }
 }
