@@ -19,15 +19,11 @@ class Tests {
 
     private static execute(): void {
         this._tests.forEach(test => {
-            const testResult = test.callback();
+            this.beforeEach();
+            const testResult = test.callback().value;
             
-            if (testResult) {
-                test.state = TestState.SUCCESS;
-                this.successTests.push(test);
-                return;
-            }
-
-            test.state = TestState.FALURE;
+            test.state = (testResult) ? TestState.SUCCESS : TestState.FALURE;
+            
             this.falureTests.push(test);
         });
     }
