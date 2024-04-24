@@ -1,11 +1,14 @@
+use std::iter;
+
 use wgpu::{
-    DeviceDescriptor, Features, Instance, InstanceDescriptor, Limits, PowerPreference,
-    RequestAdapterOptions, Surface, SurfaceConfiguration, TextureUsages,
+    Color, CommandEncoderDescriptor, DeviceDescriptor, Features, Instance, InstanceDescriptor,
+    Limits, LoadOp, Operations, PowerPreference, RenderPassColorAttachment, RenderPassDescriptor,
+    RequestAdapterOptions, TextureViewDescriptor,
 };
 use winit::{
     event::*,
     event_loop::{ControlFlow, EventLoop},
-    window::WindowBuilder,
+    window::{self, WindowBuilder},
 };
 
 pub fn main() {
@@ -45,8 +48,52 @@ pub fn main() {
             window_id,
         } if window_id == window.id() => match event {
             WindowEvent::CloseRequested => *control_flow = ControlFlow::Exit,
+            WindowEvent::Resized(new_size) => {
+                //WINDOW RESIZE BUG !!!
+                surface.configure(
+                    &device,
+                    &surface
+                        .get_default_config(&adapter, new_size.width, new_size.height)
+                        .unwrap(),
+                );
+            }
             _ => {}
         },
+
+        Event::RedrawRequested(_) => {
+            let texture_output = surface.get_current_texture().unwrap();
+            let view = texture_output
+                .texture
+                .create_view(&TextureViewDescriptor::default());
+            let mut encoder = device.create_command_encoder(&CommandEncoderDescriptor {
+                label: Some("Render Encoder"),
+            });
+
+            {
+                let _render_pass = encoder.begin_render_pass(&RenderPassDescriptor {
+                    label: Some("Render Pass"),
+                    color_attachments: &[Some(RenderPassColorAttachment {
+                        view: &view,
+                        resolve_target: None,
+                        ops: Operations {
+                            load: LoadOp::Clear(Color {
+                                r: 0.5,
+                                g: 0.0,
+                                b: 0.5,
+                                a: 1.0,
+                            }),
+                            store: wgpu::StoreOp::Store,
+                        },
+                    })],
+                    depth_stencil_attachment: None,
+                    timestamp_writes: None,
+                    occlusion_query_set: None,
+                });
+            }
+
+            queue.submit(iter::once(encoder.finish()));
+            texture_output.present();
+        }
         _ => {}
     });
 }
