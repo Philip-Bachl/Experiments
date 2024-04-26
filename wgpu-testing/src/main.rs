@@ -8,7 +8,7 @@ use wgpu::{
 use winit::{
     event::*,
     event_loop::{ControlFlow, EventLoop},
-    window::{self, WindowBuilder},
+    window::WindowBuilder,
 };
 
 pub fn main() {
@@ -49,11 +49,20 @@ pub fn main() {
         } if window_id == window.id() => match event {
             WindowEvent::CloseRequested => *control_flow = ControlFlow::Exit,
             WindowEvent::Resized(new_size) => {
-                //WINDOW RESIZE BUG !!!
+                let new_width: u32 = if new_size.width > 0 {
+                    new_size.width
+                } else {
+                    1
+                };
+                let new_height: u32 = if new_size.height > 0 {
+                    new_size.height
+                } else {
+                    1
+                };
                 surface.configure(
                     &device,
                     &surface
-                        .get_default_config(&adapter, new_size.width, new_size.height)
+                        .get_default_config(&adapter, new_width, new_height)
                         .unwrap(),
                 );
             }
