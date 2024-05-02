@@ -23,9 +23,13 @@ impl Calculator {
 
     pub fn run_operation<T: Operation>(&mut self, operation: &T) {
         operation.run(
-            &self.first_register,
-            &self.second_register,
+            self.first_register.chars().rev(),
+            self.second_register.chars().rev(),
             &mut self.output,
         );
+    }
+
+    pub fn output_as_number() -> Option<f64> {
+        todo!()
     }
 }
