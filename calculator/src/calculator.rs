@@ -29,7 +29,32 @@ impl Calculator {
         );
     }
 
-    pub fn output_as_number() -> Option<f64> {
-        todo!()
+    pub fn output_as_number(&self) -> Option<f64> {
+        let mut dot_index = self.output.find('.')?;
+
+        let (wholes, decimals) = self.output.split_at(dot_index);
+
+        let wholes = wholes.chars();
+        let mut decimals = decimals.chars();
+
+        decimals.next();
+        let all = wholes.chain(decimals);
+
+        let mut output = 0.0;
+        for (i, c) in all.rev().enumerate() {
+            let n = u32::try_from(self.output.len() - dot_index + i);
+
+            if n.is_err() {
+                return None;
+            }
+
+            let n = 10_u32.pow(n.unwrap());
+            let n = c.to_digit(10)? * n;
+
+            let n = f64::from(n);
+            output += n;
+        }
+
+        Some(output)
     }
 }
