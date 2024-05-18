@@ -1,0 +1,17 @@
+body {
+    height: 100vh;
+    margin: 0;
+    overflow-x: hidden;
+}
+
+.draggable {
+    position: absolute;
+}
+
+.box {
+    width: 200px;
+    aspect-ratio: 1;
+    background-color: rgba(200, 0, 200, 0.5);
+    border: 2px solid black;
+    border-radius: 10px;
+}
