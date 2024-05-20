@@ -9,13 +9,14 @@ draggables.forEach(d => {
         relativePos[0] = d.getBoundingClientRect().x - e.clientX;
         relativePos[1] = d.getBoundingClientRect().y - e.clientY;
     });
-    d.addEventListener("mouseup", e => {
-        if (d === grabbed) grabbed = null;
-    });
 });
 
 document.addEventListener("mousemove", e => {
     if (!grabbed) return;
     grabbed.style.left = (e.clientX + relativePos[0]) + "px";
     grabbed.style.top = (e.clientY + relativePos[1]) + "px";
-})
+});
+
+document.addEventListener("mouseup", e => {
+    if (grabbed) grabbed = null;
+});
