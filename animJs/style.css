@@ -1,0 +1,6 @@
+canvas {
+    width: 800px;
+    aspect-ratio: 1;
+
+    background-color: rgb(200, 200, 200);
+}
