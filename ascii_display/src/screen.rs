@@ -1,8 +1,5 @@
 use core::f64;
-use std::{
-    char,
-    ops::{Add, Mul, Sub},
-};
+use std::char;
 
 pub struct Resolution {
     pub width: usize,
@@ -19,8 +16,7 @@ impl Screen {
         let width = resolution.width;
         let height = resolution.height;
 
-        let mut buffer = Vec::with_capacity(width * height);
-        buffer.fill(clear);
+        let buffer = vec![clear; width * height];
 
         Screen { resolution, buffer }
     }
@@ -29,8 +25,21 @@ impl Screen {
         &self.resolution
     }
 
+    pub fn print(&self) {
+        for (i, c) in (&self.buffer).into_iter().enumerate() {
+            print!("{}", c);
+            if (i + 1) % self.resolution.width == 0 {
+                println!();
+            }
+        }
+    }
+
     pub fn draw_fragment(&mut self, pos: (usize, usize), char: char) {
-        self.buffer[pos.0 + pos.1 * self.resolution.width] = char;
+        let index = pos.0 + pos.1 * self.resolution.width;
+        if index > self.buffer.len() {
+            return;
+        }
+        self.buffer[index] = char;
     }
 
     /*
@@ -41,33 +50,23 @@ impl Screen {
         d = start.1 + start.0 * (start.1 - end.1) / (end.0 - start.0)
     */
 
-    const PRECISION_EXPONENT: u32 = 1;
-    const PRECISION: u32 = 10_u32.pow(Self::PRECISION_EXPONENT);
-    pub fn draw_line(&mut self, start: (usize, usize), end: (usize, usize)) {
-        let delta_x: f64 = end.0 as f64 - start.0 as f64;
-        let delta_y: f64 = end.1 as f64 - start.1 as f64;
-        let length = delta_x.hypot(delta_y);
+    pub fn draw_line(&mut self, start: (usize, usize), end: (usize, usize), char: char) {
+        let delta_x = end.0 as f64 - start.0 as f64;
+        let delta_y = end.1 as f64 - start.1 as f64;
 
-        for t in 0..Self::PRECISION {
-            let t: f64 = t.into();
-            let precision: f64 = Self::PRECISION.into();
-            let t: f64 = t / precision;
+        let k = delta_y / delta_x;
+        let d = start.1 as f64 - start.0 as f64 * k;
 
-            let start_f64 = (start.0 as f64, start.1 as f64);
-            let end_f64 = (end.0 as f64, end.1 as f64);
-
-            let pos = lerp_f64_pos(start_f64, end_f64, t);
-            todo!()
+        for x in start.0..end.0 {
+            let y = k * x as f64 + d;
+            let y = y.round().max(0.0) as usize;
+            self.draw_fragment((x, y), char);
         }
 
-        todo!()
+        for y in start.1..end.1 {
+            let x = (y as f64 - d) / k;
+            let x = x.round().max(0.0) as usize;
+            self.draw_fragment((x, y), char);
+        }
     }
-}
-
-fn lerp_f64(start: f64, end: f64, t: f64) -> f64 {
-    start + (end - start) * t
-}
-
-fn lerp_f64_pos(start: (f64, f64), end: (f64, f64), t: f64) -> (f64, f64) {
-    (lerp_f64(start.0, end.0, t), lerp_f64(start.1, end.1, t))
 }
