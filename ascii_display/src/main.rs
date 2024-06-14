@@ -10,6 +10,6 @@ fn main() {
         },
         '.',
     );
-    screen.draw_line((18, 0), (24, 30), '#');
+    screen.draw_line((20, 20), (15, 5), '#');
     screen.print();
 }
