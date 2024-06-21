@@ -32,16 +32,12 @@ fn merge_sort<T: Copy + PartialOrd>(list: &[T]) -> Vec<T> {
 
     loop {
         if left_index == left.len() {
-            for i in right_index..right.len() {
-                result.push(right[i]);
-            }
+            result.extend_from_slice(&right[right_index..]);
             break;
         }
 
         if right_index == right.len() {
-            for i in left_index..left.len() {
-                result.push(left[i]);
-            }
+            result.extend_from_slice(&left[left_index..]);
             break;
         }
 
