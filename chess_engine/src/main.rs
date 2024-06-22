@@ -1,9 +1,4 @@
-use board::Board;
+mod board_state;
+mod piece;
 
-pub mod board;
-pub mod piece;
-
-fn main() {
-    let board = Board::new();
-    board.print();
-}
+fn main() {}

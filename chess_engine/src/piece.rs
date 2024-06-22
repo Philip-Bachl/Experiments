@@ -1,40 +1,36 @@
-#[derive(Clone)]
 pub enum PieceType {
-    PAWN,
-    KNIGHT,
     BISHOP,
     KING,
-    ROOK,
+    KNIGHT,
+    PAWN,
     QUEEN,
+    ROOK,
 }
 
-#[derive(Clone)]
 pub struct Piece {
-    pub is_white: bool,
     pub piece_type: PieceType,
-    pub file: u8,
-    pub rank: u8,
+    pub is_white: bool,
+    pub row: usize,
+    pub column: usize,
 }
 
 impl Piece {
-    pub fn symbol(&self) -> char {
-        if self.is_white {
-            return match self.piece_type {
-                PieceType::PAWN => 'P',
-                PieceType::KNIGHT => 'N',
-                PieceType::BISHOP => 'B',
-                PieceType::KING => 'K',
-                PieceType::ROOK => 'R',
-                PieceType::QUEEN => 'Q',
-            };
-        }
-        match self.piece_type {
-            PieceType::PAWN => 'p',
-            PieceType::KNIGHT => 'n',
-            PieceType::BISHOP => 'b',
-            PieceType::KING => 'k',
-            PieceType::ROOK => 'r',
-            PieceType::QUEEN => 'q',
-        }
+    pub fn new(piece_type: PieceType, is_white: bool, row: usize, column: usize) -> Piece {
+        return Piece {
+            piece_type,
+            is_white,
+            row,
+            column,
+        };
+    }
+
+    pub fn get_value(&self) -> u8 {
+        return match self.piece_type {
+            PieceType::KING => 0,
+            PieceType::PAWN => 1,
+            PieceType::BISHOP | PieceType::KNIGHT => 3,
+            PieceType::ROOK => 5,
+            PieceType::QUEEN => 9,
+        };
     }
 }
