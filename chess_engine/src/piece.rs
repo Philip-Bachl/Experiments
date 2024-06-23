@@ -7,6 +7,12 @@ pub enum PieceType {
     ROOK,
 }
 
+impl PartialEq for PieceType {
+    fn eq(&self, other: &Self) -> bool {
+        core::mem::discriminant(self) == core::mem::discriminant(other)
+    }
+}
+
 pub struct Piece {
     pub piece_type: PieceType,
     pub is_white: bool,
@@ -32,5 +38,14 @@ impl Piece {
             PieceType::ROOK => 5,
             PieceType::QUEEN => 9,
         };
+    }
+}
+
+impl PartialEq for Piece {
+    fn eq(&self, other: &Self) -> bool {
+        self.piece_type == other.piece_type
+            && self.is_white == other.is_white
+            && self.row == other.row
+            && self.column == other.column
     }
 }
