@@ -1,5 +1,3 @@
-use std::vec;
-
 use crate::vector::VectorF32;
 
 pub struct MatrixF32 {

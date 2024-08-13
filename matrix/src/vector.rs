@@ -1,6 +1,6 @@
 use std::ops::Mul;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct VectorF32 {
     pub entries: Vec<f32>,
 }
