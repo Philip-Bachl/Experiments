@@ -1,16 +1,8 @@
-use std::ops::Mul;
+use std::ops::{Index, Mul};
 
 #[derive(Clone, Debug)]
 pub struct VectorF32 {
     pub entries: Vec<f32>,
-}
-
-impl Mul<f32> for VectorF32 {
-    type Output = VectorF32;
-
-    fn mul(self, rhs: f32) -> Self::Output {
-        self.scale(rhs)
-    }
 }
 
 impl VectorF32 {
@@ -25,5 +17,21 @@ impl VectorF32 {
     pub fn scale(&self, scalar: f32) -> VectorF32 {
         let entries: Vec<f32> = self.entries.iter().map(|e| e * scalar).collect();
         Self { entries }
+    }
+}
+
+impl Mul<f32> for VectorF32 {
+    type Output = VectorF32;
+
+    fn mul(self, rhs: f32) -> Self::Output {
+        self.scale(rhs)
+    }
+}
+
+impl Index<usize> for VectorF32 {
+    type Output = f32;
+
+    fn index(&self, index: usize) -> &Self::Output {
+        &self.entries[index]
     }
 }
