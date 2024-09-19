@@ -73,9 +73,8 @@ impl ThreadPool {
 
 impl Drop for ThreadPool {
     fn drop(&mut self) {
+        drop(self.sender.take());
         for worker in &mut self.workers {
-            drop(self.sender.take());
-
             println!("Shutting down worker {}", worker.id);
 
             if let Some(thread) = worker.thread.take() {
