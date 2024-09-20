@@ -1,12 +1,10 @@
 use core::f32;
-use std::vec;
 
-use crate::piece::{self, Piece, PieceType};
+use crate::piece::Piece;
 
 pub struct BoardState {
     is_white_turn: bool,
-    white_pieces: Vec<Piece>,
-    black_pieces: Vec<Piece>,
+    board: [Option<Piece>; 64],
 }
 
 struct EvalBoardState {
@@ -14,64 +12,56 @@ struct EvalBoardState {
     eval: f32,
 }
 
+pub const EMPTY_PIECE: Option<Piece> = None;
 pub const MAX_EVAL_DEPTH: u8 = 3;
 
 impl BoardState {
     pub fn new() -> BoardState {
+        let board = [EMPTY_PIECE; 64];
         BoardState {
             is_white_turn: true,
-            white_pieces: Vec::new(),
-            black_pieces: Vec::new(),
+            board,
         }
     }
 
-    //row, column = zero based
-    pub fn get_piece_white(&mut self, row: usize, column: usize) -> Option<&Piece> {
-        for p in &self.white_pieces {
-            if p.row == row && p.column == column {
-                return Some(p);
-            }
-        }
-        None
+    pub fn get_piece_at(&self, row: usize, column: usize) -> &Option<Piece> {
+        &self.board[row + column * 8]
     }
 
-    pub fn get_piece_black(&mut self, row: usize, column: usize) -> Option<&Piece> {
-        for p in &self.black_pieces {
-            if p.row == row && p.column == column {
-                return Some(p);
-            }
-        }
-        None
+    fn is_white_check(&self) -> bool {
+        todo!()
     }
 
-    fn generate_valid_moves_for_piece(&self, piece: &Piece) -> Vec<BoardState> {
-        let result: Vec<BoardState> = Vec::new();
-        let list_to_test = if piece.is_white {
-            &self.white_pieces
+    fn is_black_check(&self) -> bool {
+        todo!()
+    }
+
+    pub fn is_check(&self) -> bool {
+        if self.is_white_turn {
+            self.is_white_check()
         } else {
-            &self.black_pieces
-        };
-
-        todo!();
+            self.is_black_check()
+        }
     }
 
-    fn generate_valid_moves_for_pieces(&self, pieces: &Vec<Piece>) -> Vec<BoardState> {
-        pieces
-            .iter()
-            .flat_map(|p| self.generate_valid_moves_for_piece(p))
-            .collect()
+    pub fn is_checkmate(&self) -> bool {
+        if self.is_white_turn {
+            self.is_black_check()
+        } else {
+            self.is_white_check()
+        }
     }
 
     fn eval_raw(&self) -> f32 {
-        let mut white_eval = 0;
-        let mut black_eval = 0;
+        let mut eval = self
+            .board
+            .iter()
+            .filter_map(|p| p.as_ref())
+            .map(|p| p.value as f32 * if p.is_white { 1_f32 } else { -1_f32 })
+            .sum();
 
-        for (wp, bp) in self.white_pieces.iter().zip(self.black_pieces.iter()) {
-            white_eval += wp.get_value();
-            black_eval += bp.get_value();
-        }
-
-        (white_eval - black_eval) as f32
+        todo!("Implement Checkmate and Stalemate, dumbass!");
+        eval
     }
 
     fn eval(&self, current_depth: u8) -> f32 {
@@ -79,57 +69,11 @@ impl BoardState {
             return self.eval_raw();
         }
 
-        let mut best_eval;
-
-        //its white's turn
-        if self.is_white_turn && current_depth % 2 == 0
-            || !(self.is_white_turn || current_depth % 2 == 0)
-        {
-            let states = self.generate_valid_moves_for_pieces(&self.white_pieces);
-            best_eval = f32::MIN; // TODO could mess up checkmating
-
-            for state in states {
-                let eval = state.eval(current_depth + 1);
-                if eval > best_eval {
-                    best_eval = eval;
-                }
-            }
-
-            return best_eval;
-        }
-
-        //its black's turn
-        let states = self.generate_valid_moves_for_pieces(&self.black_pieces);
-        best_eval = f32::MAX; // TODO could mess up checkmating
-
-        for state in states {
-            let eval = state.eval(current_depth + 1);
-            if eval < best_eval {
-                best_eval = eval;
-            }
-        }
-
-        best_eval
+        todo!()
     }
 
     pub fn best_next_move(&self) -> BoardState {
-        if self.is_white_turn {
-            let states = self.generate_valid_moves_for_pieces(&self.white_pieces);
-            states
-                .into_iter()
-                .map(|s| EvalBoardState::new(s, 0))
-                .max_by(|s1, s2| s1.eval.partial_cmp(&s2.eval).unwrap())
-                .unwrap()
-                .board_state
-        } else {
-            let states = self.generate_valid_moves_for_pieces(&self.black_pieces);
-            states
-                .into_iter()
-                .map(|s| EvalBoardState::new(s, 0))
-                .min_by(|s1, s2| s1.eval.partial_cmp(&s2.eval).unwrap())
-                .unwrap()
-                .board_state
-        }
+        todo!()
     }
 }
 
