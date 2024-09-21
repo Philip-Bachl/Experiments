@@ -28,28 +28,12 @@ impl BoardState {
         &self.board[row + column * 8]
     }
 
-    fn is_white_check(&self) -> bool {
+    pub fn is_white_check(&self) -> bool {
         todo!()
     }
 
-    fn is_black_check(&self) -> bool {
+    pub fn is_black_check(&self) -> bool {
         todo!()
-    }
-
-    pub fn is_check(&self) -> bool {
-        if self.is_white_turn {
-            self.is_white_check()
-        } else {
-            self.is_black_check()
-        }
-    }
-
-    pub fn is_checkmate(&self) -> bool {
-        if self.is_white_turn {
-            self.is_black_check()
-        } else {
-            self.is_white_check()
-        }
     }
 
     fn eval_raw(&self) -> f32 {
@@ -60,11 +44,19 @@ impl BoardState {
             .map(|p| p.value as f32 * if p.is_white { 1_f32 } else { -1_f32 })
             .sum();
 
-        todo!("Implement Checkmate and Stalemate, dumbass!");
+        todo!("Implement Stalemate, please!");
         eval
     }
 
     fn eval(&self, current_depth: u8) -> f32 {
+        if self.is_white_turn && self.is_white_check() {
+            return f32::MAX;
+        }
+
+        if !self.is_white_turn && self.is_black_check() {
+            return f32::MIN;
+        }
+
         if current_depth == MAX_EVAL_DEPTH {
             return self.eval_raw();
         }
