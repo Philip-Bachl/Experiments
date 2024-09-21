@@ -3,7 +3,7 @@ use std::iter;
 use state::State;
 
 use wgpu::{
-    Color, CommandEncoderDescriptor, LoadOp, Operations, RenderPassColorAttachment,
+    Color, CommandEncoderDescriptor, IndexFormat, LoadOp, Operations, RenderPassColorAttachment,
     RenderPassDescriptor, TextureViewDescriptor,
 };
 use winit::{event::*, event_loop::ControlFlow};
@@ -66,9 +66,9 @@ pub fn main() {
                             resolve_target: None,
                             ops: Operations {
                                 load: LoadOp::Clear(Color {
-                                    r: 0.5,
-                                    g: 0.0,
-                                    b: 0.5,
+                                    r: 0.35,
+                                    g: 0.5,
+                                    b: 0.6,
                                     a: 1.0,
                                 }),
                                 store: wgpu::StoreOp::Store,
@@ -81,7 +81,9 @@ pub fn main() {
 
                     _render_pass.set_pipeline(&state.render_pipeline);
                     _render_pass.set_vertex_buffer(0, state.vertex_buffer.slice(..));
-                    _render_pass.draw(0..state::VERTICES.len() as u32, 0..1);
+                    _render_pass
+                        .set_index_buffer(state.index_buffer.slice(..), IndexFormat::Uint16);
+                    _render_pass.draw_indexed(0..state::INDICES.len() as u32, 0, 0..1);
                 }
 
                 state.queue.submit(iter::once(encoder.finish()));
