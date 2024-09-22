@@ -1,3 +1,4 @@
+#[derive(Clone)]
 pub enum PieceType {
     BISHOP,
     KING,
@@ -13,6 +14,7 @@ impl PartialEq for PieceType {
     }
 }
 
+#[derive(Clone)]
 pub struct Piece {
     pub piece_type: PieceType,
     pub is_white: bool,
