@@ -6,7 +6,7 @@ use wgpu::{
     Color, CommandEncoderDescriptor, IndexFormat, LoadOp, Operations, RenderPassColorAttachment,
     RenderPassDescriptor, TextureViewDescriptor,
 };
-use winit::{event::*, event_loop::ControlFlow};
+use winit::{event::*, event_loop::ControlFlow, window};
 
 mod state;
 mod vertex;
@@ -25,16 +25,9 @@ pub fn main() {
             } if window_id == state.window.id() => match event {
                 WindowEvent::CloseRequested => *control_flow = ControlFlow::Exit,
                 WindowEvent::Resized(new_size) => {
-                    let new_width: u32 = if new_size.width > 0 {
-                        new_size.width
-                    } else {
-                        1
-                    };
-                    let new_height: u32 = if new_size.height > 0 {
-                        new_size.height
-                    } else {
-                        1
-                    };
+                    let new_width = new_size.width.max(1);
+                    let new_height = new_size.height.max(1);
+
                     state.surface.configure(
                         &state.device,
                         &state
@@ -43,7 +36,6 @@ pub fn main() {
                             .unwrap(),
                     );
                 }
-                WindowEvent::KeyboardInput { .. } => {}
                 _ => {}
             },
 
@@ -80,6 +72,8 @@ pub fn main() {
                     });
 
                     _render_pass.set_pipeline(&state.render_pipeline);
+                    _render_pass.set_bind_group(0, &state.texture_bind_group, &[]);
+
                     _render_pass.set_vertex_buffer(0, state.vertex_buffer.slice(..));
                     _render_pass
                         .set_index_buffer(state.index_buffer.slice(..), IndexFormat::Uint16);
@@ -88,6 +82,10 @@ pub fn main() {
 
                 state.queue.submit(iter::once(encoder.finish()));
                 texture_output.present();
+            }
+            Event::MainEventsCleared => {
+                //To continue rendering after first time
+                state.window.request_redraw();
             }
             _ => {}
         });

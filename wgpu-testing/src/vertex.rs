@@ -10,7 +10,7 @@ pub struct Vertex {
 
 #[allow(unreachable_code)]
 impl Vertex {
-    pub fn desc() -> VertexBufferLayout<'static> {
+    pub const fn desc() -> VertexBufferLayout<'static> {
         VertexBufferLayout {
             array_stride: size_of::<Self>() as BufferAddress,
             step_mode: wgpu::VertexStepMode::Vertex,
