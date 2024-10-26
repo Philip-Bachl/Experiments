@@ -3,10 +3,10 @@ use std::iter;
 use state::State;
 
 use wgpu::{
-    Color, CommandEncoderDescriptor, IndexFormat, LoadOp, Operations, RenderPassColorAttachment,
+    Color, CommandEncoderDescriptor, LoadOp, Operations, RenderPassColorAttachment,
     RenderPassDescriptor, TextureViewDescriptor,
 };
-use winit::{event::*, event_loop::ControlFlow, window};
+use winit::{event::*, event_loop::ControlFlow};
 
 mod state;
 mod vertex;
@@ -75,8 +75,6 @@ pub fn main() {
                     _render_pass.set_bind_group(0, &state.texture_bind_group, &[]);
 
                     _render_pass.set_vertex_buffer(0, state.vertex_buffer.slice(..));
-                    _render_pass
-                        .set_index_buffer(state.index_buffer.slice(..), IndexFormat::Uint16);
                     _render_pass.draw_indexed(0..state::INDICES.len() as u32, 0, 0..1);
                 }
 

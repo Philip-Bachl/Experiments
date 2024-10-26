@@ -1,4 +1,4 @@
-use image::{imageops::FilterType::Nearest, GenericImageView};
+use image::GenericImageView;
 use wgpu::{
     include_wgsl,
     util::{BufferInitDescriptor, DeviceExt},
@@ -65,12 +65,8 @@ pub struct State {
     pub render_pipeline: RenderPipeline,
 
     pub vertex_buffer: Buffer,
-<<<<<<< Updated upstream
-    pub index_buffer: Buffer,
-=======
 
     pub texture_bind_group: BindGroup,
->>>>>>> Stashed changes
 }
 
 impl State {
@@ -263,12 +259,8 @@ impl State {
             render_pipeline,
 
             vertex_buffer,
-<<<<<<< Updated upstream
-            index_buffer,
-=======
 
             texture_bind_group,
->>>>>>> Stashed changes
         }
     }
 }
