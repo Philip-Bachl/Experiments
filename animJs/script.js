@@ -28,6 +28,9 @@ class Shape {
 }
 
 //---------------------------------------------------------------------------------
+
+console.log(shuffleArray([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]));
+
 const canvas = document.querySelector("canvas");
 const ctx = canvas.getContext("2d");
 
@@ -47,8 +50,8 @@ const animationInterval = setInterval(() => {
     if (t >= 1000) {
         t = 0;
         shapeOrder++;
-        shape1 = regularPoligon(shapeOrder, 50, 50, 50);
-        shape2 = regularPoligon(shapeOrder + 1, 50, 50, 50);
+        shape1 = shape2;
+        shape2 = regularPoligon(Math.floor(Math.random() * 20 + 1), 50, 50, 50);
     };
 }, 10);
 
@@ -71,6 +74,9 @@ function lerpShapes(meshStart, meshEnd, t) {
 
     const betweenShape = new Shape([]);
     const iterationCount = Math.max(meshStart.points.length, meshEnd.points.length);
+
+    const startPoints = meshStart.points;
+    const endPoints = meshStart.points;
 
     for (let i = 0; i < iterationCount; i++) {
         //Taking prev point if no available
@@ -98,4 +104,15 @@ function regularPoligon(order, radius, xOffset, yOffset) {
     }
 
     return shape;
+}
+
+function shuffleArray(array) {
+    for (let currentIndex = 0; currentIndex < array.length; currentIndex++) {
+        const randIndex = Math.floor(Math.random() * array.length);
+        
+        const temp = array[currentIndex];
+        array[currentIndex] = array[randIndex];
+        array[randIndex] = temp;
+    }
+    return array;
 }
