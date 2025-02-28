@@ -3,12 +3,14 @@ use std::iter;
 use state::State;
 
 use wgpu::{
-    Color, CommandEncoderDescriptor, LoadOp, Operations, RenderPassColorAttachment,
+    Color, CommandEncoderDescriptor, IndexFormat, LoadOp, Operations, RenderPassColorAttachment,
     RenderPassDescriptor, TextureViewDescriptor,
 };
 use winit::{event::*, event_loop::ControlFlow};
 
+mod camera;
 mod state;
+mod texture;
 mod vertex;
 
 pub fn main() {
@@ -51,7 +53,7 @@ pub fn main() {
                     });
 
                 {
-                    let mut _render_pass = encoder.begin_render_pass(&RenderPassDescriptor {
+                    let mut render_pass = encoder.begin_render_pass(&RenderPassDescriptor {
                         label: Some("Render Pass"),
                         color_attachments: &[Some(RenderPassColorAttachment {
                             view: &view,
@@ -71,11 +73,15 @@ pub fn main() {
                         occlusion_query_set: None,
                     });
 
-                    _render_pass.set_pipeline(&state.render_pipeline);
-                    _render_pass.set_bind_group(0, &state.texture_bind_group, &[]);
+                    render_pass.set_pipeline(&state.render_pipeline);
 
-                    _render_pass.set_vertex_buffer(0, state.vertex_buffer.slice(..));
-                    _render_pass.draw_indexed(0..state::INDICES.len() as u32, 0, 0..1);
+                    render_pass.set_bind_group(0, &state.texture_bind_group, &[]);
+                    render_pass.set_bind_group(1, &state.camera_bind_group, &[]);
+
+                    render_pass.set_vertex_buffer(0, state.vertex_buffer.slice(..));
+                    render_pass.set_index_buffer(state.index_buffer.slice(..), IndexFormat::Uint16);
+
+                    render_pass.draw_indexed(0..state::INDICES.len() as u32, 0, 0..1);
                 }
 
                 state.queue.submit(iter::once(encoder.finish()));

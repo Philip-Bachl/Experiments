@@ -1,17 +1,13 @@
-use image::GenericImageView;
+use cgmath::Vector3;
 use wgpu::{
     include_wgsl,
     util::{BufferInitDescriptor, DeviceExt},
-    Adapter, AddressMode, BindGroup, BindGroupDescriptor, BindGroupEntry,
-    BindGroupLayoutDescriptor, BindGroupLayoutEntry, BindingResource, BindingType, BlendState,
-    Buffer, BufferUsages, ColorTargetState, ColorWrites, Device, DeviceDescriptor, Extent3d, Face,
-    Features, FilterMode, FragmentState, FrontFace, ImageCopyTexture, ImageDataLayout, Instance,
-    InstanceDescriptor, Limits, MultisampleState, Origin3d, PipelineLayoutDescriptor, PolygonMode,
+    Adapter, BindGroup, BindGroupLayout, BlendState, Buffer, BufferUsages, ColorTargetState,
+    ColorWrites, Device, DeviceDescriptor, Face, Features, FragmentState, FrontFace, Instance,
+    InstanceDescriptor, Limits, MultisampleState, PipelineLayoutDescriptor, PolygonMode,
     PowerPreference, PrimitiveState, PrimitiveTopology, Queue, RenderPipeline,
-    RenderPipelineDescriptor, RequestAdapterOptions, SamplerBindingType, SamplerDescriptor,
-    ShaderModule, ShaderStages, Surface, SurfaceConfiguration, TextureAspect, TextureDescriptor,
-    TextureDimension, TextureFormat, TextureSampleType, TextureUsages, TextureViewDescriptor,
-    TextureViewDimension, VertexState,
+    RenderPipelineDescriptor, RequestAdapterOptions, ShaderModule, Surface, SurfaceConfiguration,
+    VertexState,
 };
 use winit::{
     dpi::PhysicalSize,
@@ -19,28 +15,33 @@ use winit::{
     window::{Window, WindowBuilder},
 };
 
-use crate::vertex::Vertex;
+use crate::{
+    camera::{Camera, CameraUniform},
+    texture::Texture,
+    vertex::Vertex,
+};
 
-pub const VERTICES: &[Vertex] = &[
+const VERTICES: &[Vertex] = &[
+    // Changed
     Vertex {
         position: [-0.0868241, 0.49240386, 0.0],
-        color: [0.5, 0.0, 0.5],
+        tex_coords: [0.4131759, 0.00759614],
     }, // A
     Vertex {
         position: [-0.49513406, 0.06958647, 0.0],
-        color: [0.5, 0.0, 0.5],
+        tex_coords: [0.0048659444, 0.43041354],
     }, // B
     Vertex {
         position: [-0.21918549, -0.44939706, 0.0],
-        color: [0.5, 0.0, 0.5],
+        tex_coords: [0.28081453, 0.949397],
     }, // C
     Vertex {
         position: [0.35966998, -0.3473291, 0.0],
-        color: [0.5, 0.0, 0.5],
+        tex_coords: [0.85967, 0.84732914],
     }, // D
     Vertex {
         position: [0.44147372, 0.2347359, 0.0],
-        color: [0.5, 0.0, 0.5],
+        tex_coords: [0.9414737, 0.2652641],
     }, // E
 ];
 
@@ -65,8 +66,17 @@ pub struct State {
     pub render_pipeline: RenderPipeline,
 
     pub vertex_buffer: Buffer,
+    pub index_buffer: Buffer,
 
+    pub textures: Vec<Texture>,
+    pub texture_bind_group_layout: BindGroupLayout,
     pub texture_bind_group: BindGroup,
+
+    pub camera: Camera,
+    pub camera_buffer: Buffer,
+    pub camera_uniform: CameraUniform,
+    pub camera_bind_group: BindGroup,
+    pub camera_bind_group_layout: BindGroupLayout,
 }
 
 impl State {
@@ -100,99 +110,40 @@ impl State {
             .unwrap();
         surface.configure(&device, &default_surface_config);
 
-        let texture_bytes = include_bytes!("assets/img.png");
-        let texture_image = image::load_from_memory(texture_bytes).unwrap();
-        let texture_rgba = texture_image.to_rgba8();
+        let texture = Texture::new("src/assets/img.png", &queue, &device);
+        let texture_bind_group_layout = Texture::default_bind_group_layout(&device);
+        let texture_bind_group = texture.create_bind_group(&device, &texture_bind_group_layout);
 
-        let dimensions = texture_image.dimensions();
-        let texture_size = Extent3d {
-            width: dimensions.0,
-            height: dimensions.1,
-            depth_or_array_layers: 1,
+        let camera = Camera {
+            eye: (0.0, 1.0, 2.0).into(),
+            target: (0.0, 0.0, 0.0).into(),
+            up: Vector3::unit_y(),
+            aspect: size.width as f32 / size.height as f32,
+            fovy: 45.0,
+            znear: 1.0,
+            zfar: 100.0,
         };
 
-        let texture = device.create_texture(&TextureDescriptor {
-            label: Some("Texture 1"),
-            size: texture_size,
-            mip_level_count: 1,
-            sample_count: 1,
-            dimension: TextureDimension::D2,
-            format: TextureFormat::Rgba8UnormSrgb,
-            usage: TextureUsages::TEXTURE_BINDING | TextureUsages::COPY_DST,
-            view_formats: &[],
-        });
+        let mut camera_uniform = CameraUniform::new();
+        camera_uniform.update_projection_matrix(&camera);
 
-        queue.write_texture(
-            ImageCopyTexture {
-                texture: &texture,
-                mip_level: 0,
-                origin: Origin3d::ZERO,
-                aspect: TextureAspect::All,
-            },
-            &texture_rgba,
-            ImageDataLayout {
-                offset: 0,
-                bytes_per_row: Some(4 * dimensions.0),
-                rows_per_image: Some(dimensions.1),
-            },
-            texture_size,
-        );
-
-        let texture_view = texture.create_view(&TextureViewDescriptor::default());
-        let texture_sampler = device.create_sampler(&SamplerDescriptor {
-            label: Some("Texture Sampler"),
-            address_mode_u: AddressMode::ClampToEdge,
-            address_mode_v: AddressMode::ClampToEdge,
-            address_mode_w: AddressMode::ClampToEdge,
-            mag_filter: FilterMode::Nearest,
-            min_filter: FilterMode::Nearest,
-            mipmap_filter: FilterMode::Nearest,
-            ..Default::default()
+        let camera_buffer = device.create_buffer_init(&BufferInitDescriptor {
+            label: Some("Camera Buffer"),
+            contents: bytemuck::cast_slice(&[camera_uniform]),
+            usage: BufferUsages::UNIFORM | BufferUsages::COPY_DST,
         });
-
-        let texture_bind_group_layout =
-            device.create_bind_group_layout(&BindGroupLayoutDescriptor {
-                label: Some("texture_bind_group_layout"),
-                entries: &[
-                    BindGroupLayoutEntry {
-                        binding: 0,
-                        visibility: ShaderStages::FRAGMENT,
-                        ty: BindingType::Texture {
-                            sample_type: TextureSampleType::Float { filterable: true },
-                            view_dimension: TextureViewDimension::D2,
-                            multisampled: false,
-                        },
-                        count: None,
-                    },
-                    BindGroupLayoutEntry {
-                        binding: 1,
-                        visibility: ShaderStages::FRAGMENT,
-                        ty: BindingType::Sampler(SamplerBindingType::Filtering),
-                        count: None,
-                    },
-                ],
-            });
-        let texture_bind_group = device.create_bind_group(&BindGroupDescriptor {
-            label: Some("texture_bind_group"),
-            layout: &texture_bind_group_layout,
-            entries: &[
-                BindGroupEntry {
-                    binding: 0,
-                    resource: BindingResource::TextureView(&texture_view),
-                },
-                BindGroupEntry {
-                    binding: 1,
-                    resource: BindingResource::Sampler(&texture_sampler),
-                },
-            ],
-        });
+        let camera_bind_group_layout = Camera::create_bind_group_layout(&device);
+        let camera_bind_group =
+            Camera::create_bind_group(&device, &camera_bind_group_layout, &camera_buffer);
 
         let shader = device.create_shader_module(include_wgsl!("shader.wgsl"));
         let render_pipeline_layout = device.create_pipeline_layout(&PipelineLayoutDescriptor {
             label: Some("Render Pipeline Layout"),
-            bind_group_layouts: &[&texture_bind_group_layout],
+            bind_group_layouts: &[&texture_bind_group_layout, &camera_bind_group_layout],
             push_constant_ranges: &[],
         });
+
+        let textures = vec![texture];
 
         let render_pipeline = device.create_render_pipeline(&RenderPipelineDescriptor {
             label: Some("Render Pipeline"),
@@ -259,8 +210,17 @@ impl State {
             render_pipeline,
 
             vertex_buffer,
+            index_buffer,
 
+            textures,
             texture_bind_group,
+            texture_bind_group_layout,
+
+            camera,
+            camera_buffer,
+            camera_uniform,
+            camera_bind_group,
+            camera_bind_group_layout,
         }
     }
 }
